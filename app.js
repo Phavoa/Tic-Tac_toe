@@ -1,75 +1,121 @@
-/* function randomNum() {
-  let a = Math.floor(Math.random() * 10);
-  if (a < 5) {
-    return "X";
-  }
-  else {
-    return "O";
-  }
-}
-
-const arrays = [];
-for (let i = 0; i < 9; i++) {
-  arrays.push(randomNum());
-}
-
-const newArray = [];
-for (let i = 0; i < 3; i++) {
-  const row = [];
-  for (let j = 0; j < 3; j++) {
-    row.push(arrays[i * 3 + j]);
-  }
-  newArray.push(row);
-}
-console.log(newArray); */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const cell = document.querySelectorAll('.cell');
+let array = [null, null, null, null, null, null, null, null, null];
+const playerChoice = ["X", "O"];
+let gameOver = false;
 
+
+function createImageElement(notify) {
+  if (notify === 'X') {
+    const X = document.createElement('img');
+    X.src = "image/X.png";
+    return X;
+  } else if (notify === 'O') {
+    const O = document.createElement('img');
+    O.src = "image/O.png";
+    return O;
+  }
+}
+
+function splitArray(array) {
+  const result = [];
+  for (let i = 0; i < array.length; i += 3) {
+    result.push(array.slice(i, i + 3));
+  }
+  return result;
+}
+
+function computerIndex(board) {
+  const vacantIndices = [];
+  board.forEach((value, index) => {
+    if (value === null) {
+      vacantIndices.push(index);
+    }
+  });
+
+  // If there are vacant indices, randomly select one and place 'O'
+  if (vacantIndices.length > 0) {
+    const randomIndex = vacantIndices[Math.floor(Math.random() * vacantIndices.length)];
+    board[randomIndex] = 'O';
+    return [board[randomIndex], randomIndex];
+  }
+}
+
+function handlePlayerMove(index) {
+  if (!gameOver && array[index] === null) {
+    const playerMoveImage = createImageElement('X');
+    cell[index].append(playerMoveImage);
+    array[index] = 'X';
+    console.log(array);
+    handleComputerMove();
+    checkGame();
+  }
+
+}
+
+// Function to handle computer's move
+function handleComputerMove() {
+  if (!gameOver) {
+    let computerPlay = computerIndex(array);
+    if (computerPlay) {
+      const computerMoveImage = createImageElement('O');
+      cell[computerPlay[1]].append(computerMoveImage);
+    }
+  }
+}
+
+// Function to check the game status
+function checkGame() {
+  let newArray = splitArray(array);
+
+  const checks = {
+    leftToRightTop: leftToRightTop(newArray),
+    leftToRightMiddle: leftToRightMiddle(newArray),
+    leftToRightBottom: leftToRightBottom(newArray),
+    topDownLeft: topDownLeft(newArray),
+    topDownMiddle: topDownMiddle(newArray),
+    topDownRight: topDownRight(newArray),
+    diagonalChecks: diagonalChecks(newArray),
+  };
+
+  for (const check in checks) {
+    const result = checks[check];
+    if (result[0] === true) {
+      gameOver = true;
+      console.log(result[1]);
+      alert(result);
+      restartGame();
+      break;  // Exit the loop if a winner is found
+    }
+  }
+
+  if (!gameOver && array.every(cell => cell !== null)) {
+    alert("It's a draw!");
+    restartGame();
+  }
+}
+
+function restartGame() {
+  // Reset array to null
+  array = [null, null, null, null, null, null, null, null, null];
+
+  // Remove images from cells
+  cell.forEach(cellElement => {
+    while (cellElement.firstChild) {
+      cellElement.removeChild(cellElement.firstChild);
+    }
+  });
+
+  // Reset game state
+  gameOver = false;
+}
+
+// Event listeners for each cell
 for (let i = 0; i < cell.length; i++) {
   cell[i].addEventListener('click', () => {
-    cell[i].textContent = 'X';
-  })
+    handlePlayerMove(i);
+  });
 }
 
-
-
-
-
-const newArray = [['X', 'O', 'X'],
-                  ['X', 'O', 'X'],
-                  ['X', 'O', 'X']]
 
 
 function leftToRightCheck(board, rowIndex) {
@@ -179,15 +225,35 @@ function diagonalChecks(board) {
 }
 
 
+/* for (let i = 0; i < cell.length; i++) {
+  cell[i].addEventListener('click', () => {
+    if (array[i] === null) {
+      cell[i].textContent = 'X';
+      array[i] = "X";
+      console.log(array);
+      let computerPlay = computerTurn(array);
+      if (computerPlay) {
+        cell[computerPlay[1]].textContent = 'O';
+      }
+    }
+   let newArray = splitArray(array);
 
-
-console.log(leftToRightTop(newArray));
-console.log(leftToRightMiddle(newArray));
-console.log(leftToRightBottom(newArray));
-
-console.log(topDownLeft(newArray));
-console.log(topDownMiddle(newArray));
-console.log(topDownRight(newArray));
-
-console.log(diagonalChecks(newArray));
-/* runGame() */
+   const checks = {
+    leftToRightTop: leftToRightTop(newArray),
+    leftToRightMiddle: leftToRightMiddle(newArray),
+    leftToRightBottom: leftToRightBottom(newArray),
+    topDownLeft: topDownLeft(newArray),
+    topDownMiddle: topDownMiddle(newArray),
+    topDownRight: topDownRight(newArray),
+    diagonalChecks: diagonalChecks(newArray),
+  };
+  for (const check in checks) {
+    const result = checks[check];
+    if (result !== 'No Winner') {
+      console.log(result);
+      break;  // Exit the loop if a winner is found
+    }
+  }
+  })
+}
+ */
